@@ -2,8 +2,8 @@ name: OpenBell AI Daily
 
 on:
   schedule:
-    # 08:30 KST is 23:30 UTC on the previous calendar day.
-    - cron: "30 23 * * *"
+    # 08:30 KST is 23:30 UTC on the previous calendar day. Weekdays only.
+    - cron: "30 23 * * 0-4"
   workflow_dispatch:
 
 permissions:
@@ -28,8 +28,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Collect latest market data
+        run: python src/collect_market_data.py --output market_data.json
+
       - name: Run OpenBell AI
-        run: python src/main.py --data sample_data.json --output result.html
+        run: python src/main.py --data market_data.json --output result.html
 
       - name: Upload HTML artifact
         uses: actions/upload-artifact@v6

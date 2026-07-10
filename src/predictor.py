@@ -14,7 +14,7 @@ DISCLAIMER = (
 @dataclass(frozen=True)
 class ScoreItem:
     label: str
-    score: int
+    score: int | None
     reason: str
 
 
@@ -30,7 +30,7 @@ class PredictionResult:
 
 def predict(data: MarketData) -> PredictionResult:
     items = _score_items(data)
-    total_score = sum(item.score for item in items)
+    total_score = sum(item.score for item in items if item.score is not None)
 
     return PredictionResult(
         total_score=total_score,
@@ -70,7 +70,7 @@ def build_checkpoints(data: MarketData, score: int) -> list[str]:
     ]
     if score <= -7:
         checkpoints.append("시초가 이후 반대매매성 매물과 하락 추세 지속 여부를 우선 점검")
-    if data.foreign_call_options_net_contracts > 0:
+    if data.foreign_call_options_net_contracts is not None and data.foreign_call_options_net_contracts > 0:
         checkpoints.append("외국인 콜옵션 순매수는 하락 압력을 일부 완화할 수 있음")
     return checkpoints
 
@@ -78,48 +78,64 @@ def build_checkpoints(data: MarketData, score: int) -> list[str]:
 def _score_items(data: MarketData) -> list[ScoreItem]:
     items: list[ScoreItem] = []
 
-    if data.nasdaq100_futures_change_0700_0830_pct <= -1.0:
+    if data.nasdaq100_futures_change_0700_0830_pct is None:
+        items.append(_unavailable("나스닥100 선물 07:00~08:30"))
+    elif data.nasdaq100_futures_change_0700_0830_pct <= -1.0:
         items.append(_item("나스닥100 선물 07:00~08:30", -3, f"{data.nasdaq100_futures_change_0700_0830_pct:.2f}% <= -1.0%"))
     elif data.nasdaq100_futures_change_0700_0830_pct >= 1.0:
         items.append(_item("나스닥100 선물 07:00~08:30", 3, f"{data.nasdaq100_futures_change_0700_0830_pct:.2f}% >= +1.0%"))
     else:
         items.append(_item("나스닥100 선물 07:00~08:30", 0, f"{data.nasdaq100_futures_change_0700_0830_pct:.2f}%로 임계값 미충족"))
 
-    if data.nasdaq100_futures_overnight_change_pct <= -2.0:
+    if data.nasdaq100_futures_overnight_change_pct is None:
+        items.append(_unavailable("나스닥100 선물 야간"))
+    elif data.nasdaq100_futures_overnight_change_pct <= -2.0:
         items.append(_item("나스닥100 선물 야간", -2, f"{data.nasdaq100_futures_overnight_change_pct:.2f}% <= -2.0%"))
     elif data.nasdaq100_futures_overnight_change_pct >= 2.0:
         items.append(_item("나스닥100 선물 야간", 2, f"{data.nasdaq100_futures_overnight_change_pct:.2f}% >= +2.0%"))
     else:
         items.append(_item("나스닥100 선물 야간", 0, f"{data.nasdaq100_futures_overnight_change_pct:.2f}%로 임계값 미충족"))
 
-    if data.usdkrw_change_pct > 0.5:
+    if data.usdkrw_change_pct is None:
+        items.append(_unavailable("원/달러 환율"))
+    elif data.usdkrw_change_pct > 0.5:
         items.append(_item("원/달러 환율", -1, f"{data.usdkrw_change_pct:.2f}% > +0.5%"))
     else:
         items.append(_item("원/달러 환율", 0, f"{data.usdkrw_change_pct:.2f}%로 임계값 미충족"))
 
-    if data.us10y_yield_change_pctp > 0.05:
+    if data.us10y_yield_change_pctp is None:
+        items.append(_unavailable("미국 10년물 금리"))
+    elif data.us10y_yield_change_pctp > 0.05:
         items.append(_item("미국 10년물 금리", -1, f"{data.us10y_yield_change_pctp:.2f}%p > +0.05%p"))
     else:
         items.append(_item("미국 10년물 금리", 0, f"{data.us10y_yield_change_pctp:.2f}%p로 임계값 미충족"))
 
-    if data.foreign_kospi200_futures_net_contracts < -5000:
+    if data.foreign_kospi200_futures_net_contracts is None:
+        items.append(_unavailable("외국인 KOSPI200 선물"))
+    elif data.foreign_kospi200_futures_net_contracts < -5000:
         items.append(_item("외국인 KOSPI200 선물", -2, f"{data.foreign_kospi200_futures_net_contracts:,}계약 < -5,000계약"))
     elif data.foreign_kospi200_futures_net_contracts > 5000:
         items.append(_item("외국인 KOSPI200 선물", 2, f"{data.foreign_kospi200_futures_net_contracts:,}계약 > +5,000계약"))
     else:
         items.append(_item("외국인 KOSPI200 선물", 0, f"{data.foreign_kospi200_futures_net_contracts:,}계약으로 임계값 미충족"))
 
-    if data.foreign_put_options_net_contracts < -10000 and data.put_option_iv_change_pct > 25:
+    if data.foreign_put_options_net_contracts is None or data.put_option_iv_change_pct is None:
+        items.append(_unavailable("외국인 풋옵션 + 풋 IV"))
+    elif data.foreign_put_options_net_contracts < -10000 and data.put_option_iv_change_pct > 25:
         items.append(_item("외국인 풋옵션 + 풋 IV", -3, f"풋 {data.foreign_put_options_net_contracts:,}계약 < -10,000계약, IV {data.put_option_iv_change_pct:.2f}% > 25%"))
     else:
         items.append(_item("외국인 풋옵션 + 풋 IV", 0, f"풋 {data.foreign_put_options_net_contracts:,}계약, IV {data.put_option_iv_change_pct:.2f}%로 복합 조건 미충족"))
 
-    if data.program_net_buy_krw_100m < -3000:
+    if data.program_net_buy_krw_100m is None:
+        items.append(_unavailable("프로그램 매매"))
+    elif data.program_net_buy_krw_100m < -3000:
         items.append(_item("프로그램 매매", -1, f"{data.program_net_buy_krw_100m:,}억 원 < -3,000억 원"))
     else:
         items.append(_item("프로그램 매매", 0, f"{data.program_net_buy_krw_100m:,}억 원으로 임계값 미충족"))
 
-    if data.investment_trust_futures_net_contracts < -5000:
+    if data.investment_trust_futures_net_contracts is None:
+        items.append(_unavailable("투신 선물"))
+    elif data.investment_trust_futures_net_contracts < -5000:
         items.append(_item("투신 선물", -1, f"{data.investment_trust_futures_net_contracts:,}계약 < -5,000계약"))
     else:
         items.append(_item("투신 선물", 0, f"{data.investment_trust_futures_net_contracts:,}계약으로 임계값 미충족"))
@@ -129,3 +145,7 @@ def _score_items(data: MarketData) -> list[ScoreItem]:
 
 def _item(label: str, score: int, reason: str) -> ScoreItem:
     return ScoreItem(label=label, score=score, reason=reason)
+
+
+def _unavailable(label: str) -> ScoreItem:
+    return ScoreItem(label=label, score=None, reason="최신 공개 데이터 미수집 · 점수에서 제외")

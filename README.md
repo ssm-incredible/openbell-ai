@@ -2,7 +2,7 @@
 
 국내 증시 개장 전 미국 나스닥100 선물 흐름과 국내 파생/수급 데이터를 기반으로 KOSPI/KOSPI200 시초가 방향과 장중 리스크를 예측하는 Python 프로그램입니다.
 
-이 프로젝트는 첫 버전에서 외부 API를 연결하지 않고 `sample_data.json`을 읽어 룰 기반 점수를 계산합니다.
+GitHub Actions가 매 영업일 장 시작 전에 Yahoo Finance 공개 시세 API에서 최신 데이터를 수집하고 룰 기반 점수를 계산합니다.
 
 ## 실행 환경
 
@@ -24,6 +24,13 @@ python src/main.py --data sample_data.json --output result.html
 ```
 
 실행하면 CLI에 예측 결과가 출력되고, 같은 폴더에 `result.html` 리포트가 생성됩니다.
+
+최신 데이터 수집을 수동 실행하려면 다음처럼 실행합니다.
+
+```bash
+python src/collect_market_data.py --output market_data.json
+python src/main.py --data market_data.json --output result.html
+```
 
 ## 입력 데이터
 
@@ -64,17 +71,27 @@ python src/main.py --data sample_data.json --output result.html
 - `score >= 5`: 갭상승 우위
 - 그 외: 중립 또는 박스권 가능성
 
+## 최신 데이터 수집
+
+`src/collect_market_data.py`는 다음 Yahoo Finance 심볼을 사용합니다.
+
+- `NQ=F`: 나스닥100 선물
+- `KRW=X`: 원/달러 환율
+- `^TNX`: 미국 10년물 금리
+
+Yahoo Finance 공개 차트 API에서 제공하지 않는 국내 외국인 선물·옵션, 프로그램 매매, 투신 선물 데이터는 `null`로 기록하고 점수에서 제외합니다. 리포트에는 해당 항목이 `최신 공개 데이터 미수집`으로 표시됩니다.
+
 ## GitHub Actions
 
-`.github/workflows/daily.yml`은 매일 한국시간 오전 8:30에 실행되도록 구성되어 있습니다.
+`.github/workflows/daily.yml`은 평일 한국시간 오전 8:30에 실행되도록 구성되어 있습니다.
 
 한국시간 `08:30`은 UTC 기준 전날 `23:30`이므로 cron은 다음과 같습니다.
 
 ```yaml
-cron: "30 23 * * *"
+cron: "30 23 * * 0-4"
 ```
 
-워크플로는 Python 3.11을 설치하고, 프로그램을 실행한 뒤 `result.html`을 artifact로 저장합니다. `main` 브랜치에서는 GitHub Pages 배포 단계도 실행됩니다.
+워크플로는 Python 3.11을 설치하고 최신 데이터를 수집한 뒤 프로그램을 실행합니다. 생성된 `result.html`은 artifact로 저장되며, `main` 브랜치에서는 GitHub Pages로 배포됩니다.
 
 ## 투자 주의 문구
 
@@ -82,6 +99,5 @@ cron: "30 23 * * *"
 
 ## 향후 작업
 
-- `src/data_loader.py`의 JSON 로더를 실제 시장 데이터 API로 교체
 - 입력 데이터 검증 강화
 - 과거 데이터 기반 점수 임계값 검증

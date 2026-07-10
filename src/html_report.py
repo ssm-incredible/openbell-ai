@@ -22,7 +22,7 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
             <strong>{escape(item.label)}</strong>
             <small>{escape(item.reason)}</small>
           </span>
-          <b class="{_score_class(item.score)}">{item.score:+d}</b>
+          <b class="{_score_class(item.score)}">{_score_text(item.score)}</b>
         </li>
         """
         for item in result.score_items
@@ -179,7 +179,13 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
 """
 
 
-def _score_class(score: int) -> str:
+def _score_text(score: int | None) -> str:
+    return "—" if score is None else f"{score:+d}"
+
+
+def _score_class(score: int | None) -> str:
+    if score is None:
+        return "neutral"
     if score > 0:
         return "positive"
     if score < 0:

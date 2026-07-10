@@ -42,7 +42,8 @@ def print_cli_report(report_date: str, result: PredictionResult, output_path: Pa
     print()
     print("각 점수 항목별 근거")
     for item in result.score_items:
-        print(f"- {item.label}: {item.score:+d}점 ({item.reason})")
+        score = "미수집" if item.score is None else f"{item.score:+d}"
+        print(f"- {item.label}: {score}점 ({item.reason})")
     print()
     print("장전 체크포인트")
     for checkpoint in result.checkpoints:

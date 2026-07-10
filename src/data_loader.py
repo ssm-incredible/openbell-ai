@@ -10,16 +10,16 @@ from typing import Any
 @dataclass(frozen=True)
 class MarketData:
     date: date
-    nasdaq100_futures_change_0700_0830_pct: float
-    nasdaq100_futures_overnight_change_pct: float
-    usdkrw_change_pct: float
-    us10y_yield_change_pctp: float
-    foreign_kospi200_futures_net_contracts: int
-    foreign_put_options_net_contracts: int
-    foreign_call_options_net_contracts: int
-    program_net_buy_krw_100m: int
-    investment_trust_futures_net_contracts: int
-    put_option_iv_change_pct: float
+    nasdaq100_futures_change_0700_0830_pct: float | None
+    nasdaq100_futures_overnight_change_pct: float | None
+    usdkrw_change_pct: float | None
+    us10y_yield_change_pctp: float | None
+    foreign_kospi200_futures_net_contracts: int | None
+    foreign_put_options_net_contracts: int | None
+    foreign_call_options_net_contracts: int | None
+    program_net_buy_krw_100m: int | None
+    investment_trust_futures_net_contracts: int | None
+    put_option_iv_change_pct: float | None
 
 
 REQUIRED_FIELDS = set(MarketData.__dataclass_fields__)
@@ -42,7 +42,6 @@ def load_market_data(path: str | Path) -> MarketData:
     if missing:
         raise ValueError(f"missing required fields: {', '.join(sorted(missing))}")
 
-    # TODO: Replace this JSON loader with real market data APIs.
     return MarketData(
         date=_parse_date(raw["date"]),
         nasdaq100_futures_change_0700_0830_pct=_to_float(raw, "nasdaq100_futures_change_0700_0830_pct"),
@@ -67,15 +66,19 @@ def _parse_date(value: Any) -> date:
         raise ValueError("date must be a valid YYYY-MM-DD string") from exc
 
 
-def _to_float(raw: dict[str, Any], key: str) -> float:
+def _to_float(raw: dict[str, Any], key: str) -> float | None:
+    if raw[key] is None:
+        return None
     try:
         return float(raw[key])
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{key} must be a number") from exc
 
 
-def _to_int(raw: dict[str, Any], key: str) -> int:
+def _to_int(raw: dict[str, Any], key: str) -> int | None:
     value = raw[key]
+    if value is None:
+        return None
     if isinstance(value, bool):
         raise ValueError(f"{key} must be an integer")
     try:
