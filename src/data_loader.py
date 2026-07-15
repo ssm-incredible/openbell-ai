@@ -15,6 +15,8 @@ class MarketData:
     nasdaq100_futures_overnight_change_pct: float | None
     usdkrw_change_pct: float | None
     us10y_yield_change_pctp: float | None
+    samsung_electronics_change_pct: float | None
+    sk_hynix_change_pct: float | None
     sk_hynix_adr_change_pct: float | None
     nvidia_change_pct: float | None
     micron_change_pct: float | None
@@ -53,6 +55,8 @@ def load_market_data(path: str | Path) -> MarketData:
         nasdaq100_futures_overnight_change_pct=_to_float(raw, "nasdaq100_futures_overnight_change_pct"),
         usdkrw_change_pct=_to_float(raw, "usdkrw_change_pct"),
         us10y_yield_change_pctp=_to_float(raw, "us10y_yield_change_pctp"),
+        samsung_electronics_change_pct=_to_float(raw, "samsung_electronics_change_pct"),
+        sk_hynix_change_pct=_to_float(raw, "sk_hynix_change_pct"),
         sk_hynix_adr_change_pct=_to_float(raw, "sk_hynix_adr_change_pct"),
         nvidia_change_pct=_to_float(raw, "nvidia_change_pct"),
         micron_change_pct=_to_float(raw, "micron_change_pct"),

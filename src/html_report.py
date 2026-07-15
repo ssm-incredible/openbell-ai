@@ -125,7 +125,22 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
       border-bottom: 1px solid var(--border);
     }}
     .items li:last-child {{ border-bottom: 0; }}
-    .market-items b {{ white-space: nowrap; }}
+    .items b {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 900;
+      background: #eef4ff;
+      color: var(--accent);
+      white-space: nowrap;
+    }}
+    .items b.positive {{ background: #e9f9f0; color: var(--good); }}
+    .items b.negative {{ background: #fff1f0; color: var(--bad); }}
+    .items b.neutral {{ background: #eef4ff; color: var(--accent); }}
     small {{ display: block; margin-top: 3px; color: var(--muted); }}
     .checkpoints li {{
       padding: 10px 0 10px 18px;
@@ -177,14 +192,14 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
         <ul class="items">{items}</ul>
       </section>
       <section class="card">
-        <h2>장전 체크포인트</h2>
-        <ul class="checkpoints">{checkpoints}</ul>
+        <h2>반도체 참고 지표</h2>
+        <ul class="items market-items">{reference_items}</ul>
       </section>
     </div>
 
     <section class="card" style="margin-top:16px">
-      <h2>반도체 참고 지표</h2>
-      <ul class="items market-items">{reference_items}</ul>
+      <h2>장전 체크포인트</h2>
+      <ul class="checkpoints">{checkpoints}</ul>
     </section>
 
     <section class="card disclaimer">

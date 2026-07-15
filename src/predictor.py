@@ -87,6 +87,8 @@ def build_checkpoints(data: MarketData, score: int) -> list[str]:
 
 def build_reference_items(data: MarketData) -> list[ReferenceItem]:
     return [
+        _reference("삼성전자", data.samsung_electronics_change_pct, "%", "Yahoo Finance 005930.KS 기준 생성 시점 등락률"),
+        _reference("SK하이닉스", data.sk_hynix_change_pct, "%", "Yahoo Finance 000660.KS 기준 생성 시점 등락률"),
         _reference("SK하이닉스 ADR", data.sk_hynix_adr_change_pct, "%", "Yahoo Finance SKHY 기준 최근 등락률"),
         _reference("엔비디아", data.nvidia_change_pct, "%", "Yahoo Finance NVDA 기준 최근 등락률"),
         _reference("마이크론", data.micron_change_pct, "%", "Yahoo Finance MU 기준 최근 등락률"),

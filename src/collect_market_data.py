@@ -20,6 +20,8 @@ def main() -> int:
     nasdaq = _chart("NQ=F", "5d", "5m")
     usdkrw = _chart("KRW=X", "5d", "1h")
     us10y = _chart("^TNX", "5d", "1h")
+    samsung_electronics = _chart("005930.KS", "5d", "1h")
+    sk_hynix = _chart("000660.KS", "5d", "1h")
     sk_hynix_adr = _chart("SKHY", "5d", "1h")
     nvidia = _chart("NVDA", "5d", "1h")
     micron = _chart("MU", "5d", "1h")
@@ -32,6 +34,8 @@ def main() -> int:
         "nasdaq100_futures_overnight_change_pct": _change_from_previous_close(nasdaq),
         "usdkrw_change_pct": _change_from_previous_close(usdkrw),
         "us10y_yield_change_pctp": _point_change_from_previous_close(us10y),
+        "samsung_electronics_change_pct": _regular_market_change_from_previous_close(samsung_electronics),
+        "sk_hynix_change_pct": _regular_market_change_from_previous_close(sk_hynix),
         "sk_hynix_adr_change_pct": _change_from_previous_close(sk_hynix_adr),
         "nvidia_change_pct": _change_from_previous_close(nvidia),
         "micron_change_pct": _change_from_previous_close(micron),
@@ -86,6 +90,13 @@ def _previous_close(chart: dict) -> float:
 def _change_from_previous_close(chart: dict) -> float:
     _, latest = _closes(chart)[-1]
     return round((latest / _previous_close(chart) - 1) * 100, 4)
+
+
+def _regular_market_change_from_previous_close(chart: dict) -> float:
+    value = chart.get("meta", {}).get("regularMarketPrice")
+    if value is None:
+        raise RuntimeError("Yahoo Finance returned no regular market price")
+    return round((float(value) / _previous_close(chart) - 1) * 100, 4)
 
 
 def _point_change_from_previous_close(chart: dict) -> float:

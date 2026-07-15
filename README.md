@@ -42,6 +42,8 @@ python src/main.py --data market_data.json --output result.html
 - `nasdaq100_futures_overnight_change_pct`: 나스닥100 선물 야간 변동률
 - `usdkrw_change_pct`: 원/달러 환율 변화율
 - `us10y_yield_change_pctp`: 미국 10년물 금리 변화, %p
+- `samsung_electronics_change_pct`: 삼성전자 생성 시점 등락률
+- `sk_hynix_change_pct`: SK하이닉스 생성 시점 등락률
 - `sk_hynix_adr_change_pct`: SK하이닉스 ADR 등락률
 - `nvidia_change_pct`: 엔비디아 등락률
 - `micron_change_pct`: 마이크론 등락률
@@ -82,6 +84,8 @@ python src/main.py --data market_data.json --output result.html
 - `NQ=F`: 나스닥100 선물
 - `KRW=X`: 원/달러 환율
 - `^TNX`: 미국 10년물 금리
+- `005930.KS`: 삼성전자
+- `000660.KS`: SK하이닉스
 - `SKHY`: SK하이닉스 ADR
 - `NVDA`: 엔비디아
 - `MU`: 마이크론
