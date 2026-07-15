@@ -28,13 +28,25 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
         for item in result.score_items
     )
     checkpoints = "\n".join(f"<li>{escape(checkpoint)}</li>" for checkpoint in result.checkpoints)
+    reference_items = "\n".join(
+        f"""
+        <li>
+          <span>
+            <strong>{escape(item.label)}</strong>
+            <small>{escape(item.reason)}</small>
+          </span>
+          <b class="{_value_class(item.value)}">{_value_text(item.value, item.unit)}</b>
+        </li>
+        """
+        for item in result.reference_items
+    )
 
     return f"""<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OpenBell AI - {data.date.isoformat()}</title>
+  <title>OpenBell AI - {data.generated_at.strftime("%Y-%m-%d %H:%M")}</title>
   <style>
     :root {{
       color-scheme: light;
@@ -113,6 +125,7 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
       border-bottom: 1px solid var(--border);
     }}
     .items li:last-child {{ border-bottom: 0; }}
+    .market-items b {{ white-space: nowrap; }}
     small {{ display: block; margin-top: 3px; color: var(--muted); }}
     .checkpoints li {{
       padding: 10px 0 10px 18px;
@@ -147,7 +160,7 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
   <main>
     <header>
       <h1>OpenBell AI</h1>
-      <p class="subtitle">국내 증시 장전 룰 기반 예측 리포트 · {data.date.isoformat()}</p>
+      <p class="subtitle">국내 증시 장전 룰 기반 예측 리포트 · 기준일 {data.date.isoformat()} · 생성 {data.generated_at.strftime("%Y-%m-%d %H:%M")}</p>
     </header>
 
     <section class="card summary">
@@ -169,6 +182,11 @@ def render_html(data: MarketData, result: PredictionResult) -> str:
       </section>
     </div>
 
+    <section class="card" style="margin-top:16px">
+      <h2>반도체 참고 지표</h2>
+      <ul class="items market-items">{reference_items}</ul>
+    </section>
+
     <section class="card disclaimer">
       <h2>투자 주의 문구</h2>
       <p>{escape(result.disclaimer)}</p>
@@ -189,5 +207,21 @@ def _score_class(score: int | None) -> str:
     if score > 0:
         return "positive"
     if score < 0:
+        return "negative"
+    return "neutral"
+
+
+def _value_text(value: float | None, unit: str) -> str:
+    if value is None:
+        return "미수집"
+    return f"{value:+.2f}{unit}"
+
+
+def _value_class(value: float | None) -> str:
+    if value is None:
+        return "neutral"
+    if value > 0:
+        return "positive"
+    if value < 0:
         return "negative"
     return "neutral"

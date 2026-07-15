@@ -19,11 +19,20 @@ class ScoreItem:
 
 
 @dataclass(frozen=True)
+class ReferenceItem:
+    label: str
+    value: float | None
+    unit: str
+    reason: str
+
+
+@dataclass(frozen=True)
 class PredictionResult:
     total_score: int
     prediction: str
     risk_level: str
     score_items: list[ScoreItem]
+    reference_items: list[ReferenceItem]
     checkpoints: list[str]
     disclaimer: str = DISCLAIMER
 
@@ -37,6 +46,7 @@ def predict(data: MarketData) -> PredictionResult:
         prediction=classify_prediction(total_score),
         risk_level=classify_risk_level(total_score),
         score_items=items,
+        reference_items=build_reference_items(data),
         checkpoints=build_checkpoints(data, total_score),
     )
 
@@ -73,6 +83,14 @@ def build_checkpoints(data: MarketData, score: int) -> list[str]:
     if data.foreign_call_options_net_contracts is not None and data.foreign_call_options_net_contracts > 0:
         checkpoints.append("외국인 콜옵션 순매수는 하락 압력을 일부 완화할 수 있음")
     return checkpoints
+
+
+def build_reference_items(data: MarketData) -> list[ReferenceItem]:
+    return [
+        _reference("SK하이닉스 ADR", data.sk_hynix_adr_change_pct, "%", "Yahoo Finance SKHY 기준 최근 등락률"),
+        _reference("엔비디아", data.nvidia_change_pct, "%", "Yahoo Finance NVDA 기준 최근 등락률"),
+        _reference("마이크론", data.micron_change_pct, "%", "Yahoo Finance MU 기준 최근 등락률"),
+    ]
 
 
 def _score_items(data: MarketData) -> list[ScoreItem]:
@@ -149,3 +167,7 @@ def _item(label: str, score: int, reason: str) -> ScoreItem:
 
 def _unavailable(label: str) -> ScoreItem:
     return ScoreItem(label=label, score=None, reason="최신 공개 데이터 미수집 · 점수에서 제외")
+
+
+def _reference(label: str, value: float | None, unit: str, reason: str) -> ReferenceItem:
+    return ReferenceItem(label=label, value=value, unit=unit, reason=reason)

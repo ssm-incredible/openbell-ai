@@ -15,18 +15,26 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=Path("market_data.json"))
     args = parser.parse_args()
 
-    report_date = datetime.now(KST).date()
+    generated_at = datetime.now(KST)
+    report_date = generated_at.date()
     nasdaq = _chart("NQ=F", "5d", "5m")
     usdkrw = _chart("KRW=X", "5d", "1h")
     us10y = _chart("^TNX", "5d", "1h")
+    sk_hynix_adr = _chart("SKHY", "5d", "1h")
+    nvidia = _chart("NVDA", "5d", "1h")
+    micron = _chart("MU", "5d", "1h")
 
     intraday = _nasdaq_morning_change(nasdaq, report_date)
     result = {
         "date": report_date.isoformat(),
+        "generated_at": generated_at.strftime("%Y-%m-%d %H:%M"),
         "nasdaq100_futures_change_0700_0830_pct": intraday,
         "nasdaq100_futures_overnight_change_pct": _change_from_previous_close(nasdaq),
         "usdkrw_change_pct": _change_from_previous_close(usdkrw),
         "us10y_yield_change_pctp": _point_change_from_previous_close(us10y),
+        "sk_hynix_adr_change_pct": _change_from_previous_close(sk_hynix_adr),
+        "nvidia_change_pct": _change_from_previous_close(nvidia),
+        "micron_change_pct": _change_from_previous_close(micron),
         # These fields are not exposed by Yahoo's public chart endpoint.
         # null makes the report exclude them instead of treating them as zero.
         "foreign_kospi200_futures_net_contracts": None,

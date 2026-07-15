@@ -1,9 +1,13 @@
 {
   "date": "2026-07-07",
+  "generated_at": "2026-07-07 08:30",
   "nasdaq100_futures_change_0700_0830_pct": -1.25,
   "nasdaq100_futures_overnight_change_pct": -2.15,
   "usdkrw_change_pct": 0.62,
   "us10y_yield_change_pctp": 0.06,
+  "sk_hynix_adr_change_pct": 2.34,
+  "nvidia_change_pct": -1.12,
+  "micron_change_pct": 1.87,
   "foreign_kospi200_futures_net_contracts": -6200,
   "foreign_put_options_net_contracts": -12500,
   "foreign_call_options_net_contracts": 1800,

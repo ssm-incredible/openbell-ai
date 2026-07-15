@@ -28,14 +28,15 @@ def main() -> int:
         print(f"OpenBell AI error: {exc}", file=sys.stderr)
         return 1
 
-    print_cli_report(data.date.isoformat(), result, args.output)
+    print_cli_report(data.date.isoformat(), data.generated_at.strftime("%Y-%m-%d %H:%M"), result, args.output)
     return 0
 
 
-def print_cli_report(report_date: str, result: PredictionResult, output_path: Path) -> None:
+def print_cli_report(report_date: str, generated_at: str, result: PredictionResult, output_path: Path) -> None:
     print("OpenBell AI")
     print("=" * 48)
-    print(f"날짜: {report_date}")
+    print(f"기준일: {report_date}")
+    print(f"생성: {generated_at}")
     print(f"총점: {result.total_score:+d}")
     print(f"예측 결과: {result.prediction}")
     print(f"위험등급: {result.risk_level}")
@@ -44,6 +45,11 @@ def print_cli_report(report_date: str, result: PredictionResult, output_path: Pa
     for item in result.score_items:
         score = "미수집" if item.score is None else f"{item.score:+d}"
         print(f"- {item.label}: {score}점 ({item.reason})")
+    print()
+    print("반도체 참고 지표")
+    for item in result.reference_items:
+        value = "미수집" if item.value is None else f"{item.value:+.2f}{item.unit}"
+        print(f"- {item.label}: {value} ({item.reason})")
     print()
     print("장전 체크포인트")
     for checkpoint in result.checkpoints:

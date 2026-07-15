@@ -37,10 +37,14 @@ python src/main.py --data market_data.json --output result.html
 `sample_data.json` 필드:
 
 - `date`: 기준 날짜, `YYYY-MM-DD`
+- `generated_at`: 리포트 생성 시각, KST 기준 `YYYY-MM-DD HH:MM`
 - `nasdaq100_futures_change_0700_0830_pct`: 나스닥100 선물 07:00~08:30 변동률
 - `nasdaq100_futures_overnight_change_pct`: 나스닥100 선물 야간 변동률
 - `usdkrw_change_pct`: 원/달러 환율 변화율
 - `us10y_yield_change_pctp`: 미국 10년물 금리 변화, %p
+- `sk_hynix_adr_change_pct`: SK하이닉스 ADR 등락률
+- `nvidia_change_pct`: 엔비디아 등락률
+- `micron_change_pct`: 마이크론 등락률
 - `foreign_kospi200_futures_net_contracts`: 외국인 KOSPI200 선물 순매수 계약 수
 - `foreign_put_options_net_contracts`: 외국인 풋옵션 순매수 계약 수
 - `foreign_call_options_net_contracts`: 외국인 콜옵션 순매수 계약 수
@@ -78,18 +82,15 @@ python src/main.py --data market_data.json --output result.html
 - `NQ=F`: 나스닥100 선물
 - `KRW=X`: 원/달러 환율
 - `^TNX`: 미국 10년물 금리
+- `SKHY`: SK하이닉스 ADR
+- `NVDA`: 엔비디아
+- `MU`: 마이크론
 
 Yahoo Finance 공개 차트 API에서 제공하지 않는 국내 외국인 선물·옵션, 프로그램 매매, 투신 선물 데이터는 `null`로 기록하고 점수에서 제외합니다. 리포트에는 해당 항목이 `최신 공개 데이터 미수집`으로 표시됩니다.
 
 ## GitHub Actions
 
-`.github/workflows/daily.yml`은 평일 한국시간 오전 8:30에 실행되도록 구성되어 있습니다.
-
-한국시간 `08:30`은 UTC 기준 전날 `23:30`이므로 cron은 다음과 같습니다.
-
-```yaml
-cron: "30 23 * * 0-4"
-```
+`.github/workflows/daily.yml`은 수동 실행(`workflow_dispatch`)만 제공합니다. 평일 한국시간 오전 8:30 실행은 외부 스케줄러에서 GitHub Actions dispatch API를 호출해 처리합니다.
 
 워크플로는 Python 3.11을 설치하고 최신 데이터를 수집한 뒤 프로그램을 실행합니다. 생성된 `result.html`은 artifact로 저장되며, `main` 브랜치에서는 GitHub Pages로 배포됩니다.
 
